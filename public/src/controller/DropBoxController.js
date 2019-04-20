@@ -7,16 +7,49 @@ class DropBoxController {
         this.initEvents();
     }
 
-
+    //método inicial do evendo do button enviar arquivos
     initEvents(){
         this.buttonSendFile.addEventListener('click', event => {
             this.inputSendFile.click();
         });
 
         this.inputSendFile.addEventListener('change', event =>{
-            console.log(event.target.files)
+            this.uploadFiles(event.target.files);
             this.snackModal.style.display = 'block'
         });
+    }
+
+    uploadFiles(files){
+        
+        let promises = [];
+        
+        [...files].forEach(file => {
+            promises.push(new Promise((resolve, reject) => {
+                let ajax = new XMLHttpRequest();
+                
+                ajax.open('POST', '/upload');
+
+                ajax.onload = event => {
+                    try{
+                        resolve(JSON.parse(ajax.responseText));
+                    }catch(e){
+                        reject(e);
+                    }
+                };
+                ajax.onerror = event =>{
+                    reject(event);
+                };
+
+                let formData = new FormData();
+
+                formData.append('input-file', file);
+
+                ajax.send(formData);
+
+            }));
+        });
+
+        return Promise.all(promises);
     }
 
 } 
